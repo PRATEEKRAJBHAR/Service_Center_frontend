@@ -153,6 +153,20 @@ export const statusCustomer = createAsyncThunk(
 
 
 
+export const deleteCustomer = createAsyncThunk(
+    'customers/delete',
+    async ({ id }, thunkApi) => {
+        try {
+            const response = await API.delete(`/auth/customers/${id}`);
+            console.log(response, "response");
+            return id;
+
+        } catch (error) {
+            return thunkApi.rejectWithValue(error.response?.data?.message || error.message)
+        }
+    }
+)
+
 
 // // seaching api here
 

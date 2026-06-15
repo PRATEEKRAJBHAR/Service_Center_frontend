@@ -7,6 +7,7 @@ import {
   BulkStatus,
   CreateService,
   customerHistory,
+  deleteService,
   downloadTicket,
   EditService,
   getCustomerServices,
@@ -561,6 +562,33 @@ console.log("Pagination:", action.payload.pagination);
       .addCase(getTicketsByCustomer.rejected, (state, action) => {
         state.loading = false;
         state.success = false;
+        state.error = action.payload;
+      })
+
+
+
+      // delete services
+
+
+    //   delete
+
+
+     .addCase(deleteService.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+.addCase(deleteService.fulfilled, (state, action) => {
+  state.loading = false;
+
+  state.services = state.services.filter(
+    (service) => service._id !== action.payload
+  );
+
+  state.pagination.totalRecords =
+    (state.pagination.totalRecords || 0) - 1;
+})
+      .addCase(deleteService.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       })
 

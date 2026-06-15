@@ -305,7 +305,15 @@ console.log(parts,'my parts');
     page,
     limit,
   ]); // ✅ FIXED
-
+useEffect(() => {
+  setPage(1);
+}, [
+  debouncedSearch,
+  debouncedMinPrice,
+  debouncedMaxPrice,
+  sortBy,
+  sortOrder,
+]);
   // ✅ TABLE HEADERS
   const partsColumns = [
     { label: "S.N", field: null },
@@ -374,19 +382,16 @@ const handleDelete = async (id) => {
 
       {/* ✅ COMMON FILTER */}
       <CommonFilters
-        // search={search}
-        // setSearch={setSearch}
-        limit={limit}
-        setLimit={setLimit}
-        showStatus={false}
-        showDate={false}
-        showTechnician={false}
-        minPrice={minPrice}
-      setMinPrice={setMinPrice}
-      maxPrice={maxPrice}
-      setMaxPrice={setMaxPrice}
-      />
-
+  limit={limit}
+  setLimit={setLimit}
+  showStatus={false}
+  showDate={false}
+  showPrice={true}
+  minPrice={minPrice}
+  setMinPrice={setMinPrice}
+  maxPrice={maxPrice}
+  setMaxPrice={setMaxPrice}
+/>
       {/* ✅ PRICE FILTER */}
       {/* <div className="flex gap-3 mb-4">
         <InputField
@@ -403,7 +408,7 @@ const handleDelete = async (id) => {
       </div> */}
 
       {/* TABLE */}
-      <TableContainer component={Paper} sx={{ maxHeight: 520 }}>
+      <TableContainer component={Paper} sx={{ maxHeight: 520,  marginTop:2}}>
         <CommonTable
           columns={partsColumns}
           data={allParts}

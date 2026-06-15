@@ -81,11 +81,9 @@ function ImagesServiceLog() {
   },
 });
   return (
-    <div className="p-6 bg-white shadow-md rounded-lg max-w-md w-full">
-
-      <h2 className="text-xl font-semibold mb-4">
-        Upload Service Image
-      </h2>
+<div className="min-h-screen flex items-center justify-center">
+  <div className="p-6 bg-white shadow-md rounded-lg w-1/2 border ">
+    {/* <div className="p-6 bg-white shadow-md rounded-lg max-w-2xl w-full border border-red-900"> */}
 
       <form onSubmit={formik.handleSubmit}>
 
@@ -106,7 +104,9 @@ function ImagesServiceLog() {
         </div>
 
       </form>
+    {/* </div> */}
     </div>
+</div>
   );
 }
 

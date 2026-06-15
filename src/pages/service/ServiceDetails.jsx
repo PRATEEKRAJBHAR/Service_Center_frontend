@@ -450,17 +450,19 @@ function ServiceDetails() {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
 
   const { singleService ,loading, success, error} = useSelector((state) => state.service);
   const { parts } = useSelector((state) => state.parts);
   // const partsData = parts?.data || [];
   const partsData = parts || [];
-console.log("singleService:", singleService);
-console.log("parts:", parts);
+// console.log("singleService:", singleService);
+// console.log("parts:", parts);
   const [selectedPartId, setSelectedPartId] = useState("");
   const [quantity, setQuantity] = useState(1);
 const [addingPart, setAddingPart] = useState(false);
-
+  const Role = user?.role;
+// console.log(Role,"role");
 
   // ✅ Fetch Parts
   useEffect(() => {
@@ -662,7 +664,7 @@ const handleDeleteLog = async (log) => {
         <div className="bg-white p-5 rounded-xl shadow">
 
           <h3 className="font-semibold mb-3">Add Parts</h3>
-
+{/*
           <SelectField
   name="partId"
   value={formik.values.partId}
@@ -672,7 +674,37 @@ const handleDeleteLog = async (log) => {
   error={formik.errors.partId}
   options={partOptions}
   placeholder="Select Part"
-/>
+/> */}
+
+<select
+  name="partId"
+  value={formik.values.partId}
+  onChange={formik.handleChange}
+  onBlur={formik.handleBlur}
+  className="
+    w-full
+    px-4 py-3
+    border border-gray-300
+    rounded-lg
+    bg-white
+    text-gray-700
+    focus:outline-none
+    focus:ring-2
+    focus:ring-blue-500
+    focus:border-blue-500
+    transition-all
+    duration-200
+    cursor-pointer
+  "
+>
+  <option value="">Select Part</option>
+
+  {partOptions.map((part) => (
+    <option key={part.value} value={part.value}>
+      {part.label}
+    </option>
+  ))}
+</select>
 
           <div className="mt-3">
            <InputField
@@ -703,11 +735,20 @@ const handleDeleteLog = async (log) => {
 
             <div className="mt-4">
               {/* <Button text="Add Part" onClick={handleAddPart} /> */}
-<Button
+{/* <Button
   text={addingPart ? "Adding..." : "Add Part"}
   onClick={formik.handleSubmit}
   disabled={addingPart}
-/>
+/> */}
+
+ {Role === "technician" && (
+          <Button
+  text={addingPart ? "Adding..." : "Add Part"}
+  onClick={formik.handleSubmit}
+  disabled={addingPart}
+          />
+        )}
+
             </div>
         </div>
 
@@ -726,7 +767,7 @@ const handleDeleteLog = async (log) => {
 
           {/* ✅ Reusable Select for Status */}
           <div className="w-48">
-            <SelectField
+            {/* <SelectField
               name="status"
               value={singleService?.status || ""}
               onChange={(e) => handleStatusChange(e.target.value)}
@@ -735,7 +776,35 @@ const handleDeleteLog = async (log) => {
                 { label: "In Progress", value: "In Progress" },
                 { label: "Completed", value: "Completed" },
               ]}
-            />
+            /> */}
+
+             <select
+  name="status"
+  value={singleService?.status || ""}
+  onChange={(e) => handleStatusChange(e.target.value)}
+  className="
+    w-full
+    px-4
+    py-3
+    border
+    border-gray-300
+    rounded-lg
+    bg-white
+    text-gray-700
+    focus:outline-none
+    focus:ring-2
+    focus:ring-blue-500
+    focus:border-blue-500
+    transition-all
+    duration-200
+    cursor-pointer
+    appearance-none
+  "
+>
+  <option value="Pending">Pending</option>
+  <option value="In Progress">In Progress</option>
+  <option value="Completed">Completed</option>
+</select>
           </div>
         </div>
 
@@ -757,10 +826,17 @@ const handleDeleteLog = async (log) => {
           <div className="flex justify-between mb-3">
             <h3>Service Images</h3>
 
-            <Button
+            {/* <Button
               text="+ Add Image"
               onClick={() => navigate(`/add-img/${id}`)}
-            />
+            /> */}
+            {Role === "technician" && (
+          <Button
+  text={addingPart ? "Adding..." : "Add Image"}
+              onClick={() => navigate(`/add-img/${id}`)}
+  disabled={addingPart}
+          />
+        )}
           </div>
 
           <div className="grid grid-cols-3 gap-4">
@@ -771,10 +847,20 @@ const handleDeleteLog = async (log) => {
                   className="h-32 w-full object-cover rounded"
                 />
 
-               <Button
+               {/* <Button
   text="Remove"
   onClick={() => handleDeleteImage(img)}
-/>
+/> */}
+
+{Role === "technician" && (
+          <Button
+  text="Remove"
+  onClick={() => handleDeleteImage(img)}
+  disabled={addingPart}
+    variant="danger"
+
+          />
+        )}
               </div>
             ))}
           </div>
@@ -785,22 +871,39 @@ const handleDeleteLog = async (log) => {
           <div className="flex justify-between mb-3">
             <h3>Reports</h3>
 
-            <Button
+            {/* <Button
               text="+ Upload Report"
               onClick={() => navigate(`/add-report/${id}`)}
-            />
+            /> */}
+            {Role === "technician" && (
+          <Button
+  text="+ Upload Report"
+              onClick={() => navigate(`/add-report/${id}`)}
+  disabled={addingPart}
+          />
+        )}
           </div>
 
           {singleService?.reports?.map((file) => (
-            <div key={file._id} className="flex justify-between">
+            <div key={file._id} className="flex justify-between m-3">
               <a href={file.url} target="_blank">
                 View
               </a>
 
-             <Button
+             {/* <Button
   text="Delete"
   onClick={() => handleDeleteReport(file)}
-/>
+/> */}
+
+{Role === "technician" && (
+          <Button
+  text="Delete"
+  onClick={() => handleDeleteReport(file)}
+  disabled={addingPart}
+    variant="danger"
+
+          />
+        )}
             </div>
           ))}
         </div>
@@ -810,20 +913,38 @@ const handleDeleteLog = async (log) => {
           <div className="flex justify-between mb-3">
             <h3>Logs</h3>
 
-            <Button
+            {/* <Button
               text="+ Add Log"
               onClick={() => navigate(`/add-log/${id}`)}
-            />
+            /> */}
+            {Role === "technician" && (
+          <Button
+  text="+ Add Log"
+              onClick={() => navigate(`/add-log/${id}`)}
+  disabled={addingPart}
+          />
+        )}
           </div>
 
           {singleService?.serviceLogs?.map((log) => (
             <div key={log._id} className="mb-2 border p-2 rounded">
               <p>{log.message}</p>
 
-             <Button
+             {/* <Button
   text="Remove"
   onClick={() => handleDeleteLog(log)}
-/>
+/> */}
+
+
+{Role === "technician" && (
+          <Button
+  text="Remove"
+  onClick={() => handleDeleteLog(log)}
+  disabled={addingPart}
+    variant="danger"
+
+          />
+        )}
             </div>
           ))}
         </div>

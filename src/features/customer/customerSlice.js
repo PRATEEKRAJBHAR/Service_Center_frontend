@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { addCustomer,
+  deleteCustomer,
   // CustomerFilter, CustomerPagination, CustomerSeaching, Customersort,fetchCustomers,
    editCustomer, statusCustomer, ViewCustomer } from "./customerThunk";
 
@@ -123,6 +124,27 @@ const customerSlice = createSlice({
         state.error = action.payload;
       })
 
+//   delete
+
+
+     .addCase(deleteCustomer.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+  .addCase(deleteCustomer.fulfilled, (state, action) => {
+  state.loading = false;
+
+  state.customers = state.customers.filter(
+    (customer) => customer._id !== action.payload
+  );
+
+  state.pagination.totalRecords =
+    (state.pagination.totalRecords || 0) - 1;
+})
+      .addCase(deleteCustomer.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
 
 
 //       // seaching

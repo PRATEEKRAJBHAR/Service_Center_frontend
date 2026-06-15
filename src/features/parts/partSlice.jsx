@@ -96,10 +96,14 @@ const partSlice = createSlice({
         state.error = null;
       })
   .addCase(deleteParts.fulfilled, (state, action) => {
-      state.loading = false; // ✅ IMPORTANT
+  state.loading = false;
+
   state.parts = state.parts.filter(
     (part) => part._id !== action.payload
   );
+
+  state.pagination.totalRecords =
+    (state.pagination.totalRecords || 0) - 1;
 })
       .addCase(deleteParts.rejected, (state, action) => {
         state.loading = false;

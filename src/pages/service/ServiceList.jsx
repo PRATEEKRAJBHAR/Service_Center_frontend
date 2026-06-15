@@ -546,7 +546,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import PreviewIcon from '@mui/icons-material/Preview';
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { assignTechnician, BulkStatus, ListingService, sendMail, updateStatus } from "../../features/service/serviceThunk";
+import { assignTechnician, BulkStatus, deleteService, ListingService, sendMail, updateStatus } from "../../features/service/serviceThunk";
 import { getTechnicians } from "../../features/auth/authThunk";
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -562,6 +562,8 @@ import SelectField from "../../component/SelectField";
 import { Old_STATUS_OPTIONS } from "../../component/commnonDropdown";
 import SearchBar from "../../component/searchBar";
 import DropDownField from "../../component/AnotherDropdown";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { showLoader ,hideLoader, showSuccess, showError,confirmAction} from "../../component/swalLoader";
 
 function ServiceList() {
     const dispatch = useDispatch();
@@ -578,7 +580,8 @@ function ServiceList() {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [debouncedSearch, setDebouncedSearch] = useState(search);
-
+    const [minPrice, setMinPrice] = useState("");
+    const [maxPrice, setMaxPrice] = useState("");
     // this is debausing concept
 
 
@@ -602,9 +605,11 @@ function ServiceList() {
             sortBy,
             sortOrder,
             page,
-            limit
+            limit,
+            minPrice,
+            maxPrice,
         }));
-    }, [dispatch, debouncedSearch, status, startDate, endDate, technician, sortBy, sortOrder, page, limit]);
+    }, [dispatch, debouncedSearch, status, startDate, endDate, technician, sortBy, sortOrder, page, limit, minPrice, maxPrice,]);
 
 
     const { services, loading, error, pagination } = useSelector(
@@ -770,6 +775,24 @@ function ServiceList() {
     }));
 
 
+const handleDelete = async (id) => {
+  const confirm = await confirmAction("Delete this service?");
+
+  if (!confirm) return;
+
+  try {
+    showLoader("Deleting Service...");
+
+    await dispatch(deleteService({ id })).unwrap();
+
+    hideLoader();
+    showSuccess("Service deleted successfully");
+  } catch (err) {
+    hideLoader();
+    showError(err || "Delete failed");
+  }
+};
+
     useEffect(() => {
         setPage(1);
     }, [debouncedSearch, status, startDate, endDate, technician, sortBy, sortOrder]);
@@ -799,12 +822,22 @@ function ServiceList() {
                     <div className="flex items-center gap-3 flex-wrap justify-end">
 
                         {/* ➕ ADD BUTTON */}
-                        <Button
+
+                        {Role === "admin" && (
+                            <Button
+                                text="Add Service"
+                                onClick={handleAdd}
+                                //   disabled={addingPart}
+                                className="bg-black text-white hover:bg-gray-800 rounded-lg px-4 py-2"
+
+                            />
+                        )}
+                        {/* <Button
                             text="Add Service"
                             onClick={handleAdd}
                             icon={<AddIcon />}
                             className="bg-black text-white hover:bg-gray-800 rounded-lg px-4 py-2"
-                        />
+                        /> */}
 
                         {/* ⚙️ FILTERS (ADMIN ONLY) */}
                         {Role === "admin" && (
@@ -867,7 +900,10 @@ function ServiceList() {
                 limit={limit}
                 setLimit={setLimit}
                 statusOptions={Old_STATUS_OPTIONS}
-
+                minPrice={minPrice}
+                setMinPrice={setMinPrice}
+                maxPrice={maxPrice}
+                setMaxPrice={setMaxPrice}
                 // control visibility
                 showTechnician={true}
                 handleAdd={handleAdd}   // ✅ pass here
@@ -888,6 +924,7 @@ function ServiceList() {
                 sx={{
                     maxHeight: 520,
                     borderRadius: 2,
+                    marginTop: 2
                 }}
             >
                 <CommonTable
@@ -972,28 +1009,40 @@ function ServiceList() {
                                         </Tooltip>
 
                                     )}
-<Tooltip title="View Service">
-  <IconButton
-    onClick={() => handleView(customer._id)}
-    
-  >
-    <PreviewIcon />
-  </IconButton>
-</Tooltip>
 
-{Role === "admin" && (
-  <Tooltip title="Send Mail">
-    <IconButton
-      onClick={() => handleSend(customer._id)}
-      sx={{
-        color: "#a855f7", // purple-500
-        "&:hover": { backgroundColor: "#f3e8ff" }, // purple-100
-      }}
-    >
-      <EmailIcon />
-    </IconButton>
-  </Tooltip>
-)}
+                                    {Role === "admin" && (
+                                        <Tooltip title="Delete">
+      <IconButton
+        onClick={() => handleDelete(customer._id)}
+        color="error"
+      >
+        <DeleteIcon />
+      </IconButton>
+    </Tooltip>
+
+                                    )}
+                                    <Tooltip title="View Service">
+                                        <IconButton
+                                            onClick={() => handleView(customer._id)}
+
+                                        >
+                                            <PreviewIcon />
+                                        </IconButton>
+                                    </Tooltip>
+
+                                    {Role === "admin" && (
+                                        <Tooltip title="Send Mail">
+                                            <IconButton
+                                                onClick={() => handleSend(customer._id)}
+                                                sx={{
+                                                    color: "#a855f7", // purple-500
+                                                    "&:hover": { backgroundColor: "#f3e8ff" }, // purple-100
+                                                }}
+                                            >
+                                                <EmailIcon />
+                                            </IconButton>
+                                        </Tooltip>
+                                    )}
                                 </div>
                             </TableCell>
 

@@ -104,12 +104,15 @@ console.log(ticketId,"servie");
 }, [dispatch, userId, ticketId]);
   return (
     <div style={{ padding: 20 }}>
-      <h2>Customer Tickets Status</h2>
+      {/* <h2>Customer Tickets Status</h2> */}
 
       {loading && <p>Loading...</p>}
 
       {!loading && services?.length === 0 && (
-        <p>No tickets found</p>
+        // <p>No tickets found</p>
+        <div className="text-center text-gray-600 text-lg font-semibold mt-20">
+          No tickets found 🚫
+        </div>
       )}
 
       {services?.map((service, i) => {

@@ -479,9 +479,10 @@ import EditIcon from "@mui/icons-material/Edit";
 import HistoryIcon from "@mui/icons-material/History";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import { useDispatch, useSelector } from "react-redux";
-import { statusCustomer, ViewCustomer } from "../../features/customer/customerThunk";
+import { deleteCustomer, statusCustomer, ViewCustomer } from "../../features/customer/customerThunk";
 import { useNavigate } from "react-router-dom";
 
 import CommonTable from "../../component/commonTable";
@@ -493,6 +494,7 @@ import InputField from "../../component/InputField";
 import { customerHead } from "../../component/tableHeader";
 import { customerStatusOptions } from "../../component/commnonDropdown";
 import SearchBar from "../../component/searchBar";
+import { showLoader ,hideLoader, showSuccess, showError,confirmAction} from "../../component/swalLoader";
 
 function CustomerList() {
   const dispatch = useDispatch();
@@ -513,52 +515,53 @@ function CustomerList() {
   const [debouncedMinPrice, setDebouncedMinPrice] = useState(minPrice);
   const [debouncedMaxPrice, setDebouncedMaxPrice] = useState(maxPrice);
 
-  const { customers, loading ,pagination } = useSelector((state) => state.customer);
+  const { customers, loading, pagination } = useSelector((state) => state.customer);
   const { user } = useSelector((state) => state.auth);
-useEffect(() => {
-  const timer = setTimeout(() => {
-    setDebouncedSearch(search);
-    setDebouncedMinPrice(minPrice);   // ✅ correct
-    setDebouncedMaxPrice(maxPrice);   // ✅ correct
-  }, 700);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setDebouncedMinPrice(minPrice);   // ✅ correct
+      setDebouncedMaxPrice(maxPrice);   // ✅ correct
+    }, 700);
 
-  return () => clearTimeout(timer);
-}, [search, minPrice, maxPrice]); // ✅ include all
+    return () => clearTimeout(timer);
+  }, [search, minPrice, maxPrice]); // ✅ include all
 
   const Role = user?.role;
   // const AllCustomer = customers?.data || [];
   // const AllCustomer = customers?.data;.
   const AllCustomer = customers || [];
-console.log(AllCustomer,"all customer");
   // ✅ API Call (FIXED: minPrice & maxPrice added)
-useEffect(() => {
-  dispatch(
-    ViewCustomer({
-      search: debouncedSearch,
-      status,
-      startDate,
-      endDate,
-      minPrice: debouncedMinPrice,   // ✅ use debounced
-      maxPrice: debouncedMaxPrice,   // ✅ use debounced
-      sortBy,
-      sortOrder,
-      page,
-      limit,
-    })
-  );
-}, [
-  dispatch,
-  debouncedSearch,
-  debouncedMinPrice,
-  debouncedMaxPrice,
-  status,
-  startDate,
-  endDate,
-  sortBy,
-  sortOrder,
-  page,
-  limit,
-]);
+  useEffect(() => {
+    // console.log(AllCustomer, "all customer");
+
+    dispatch(
+      ViewCustomer({
+        search: debouncedSearch,
+        status,
+        startDate,
+        endDate,
+        minPrice: debouncedMinPrice,   // ✅ use debounced
+        maxPrice: debouncedMaxPrice,   // ✅ use debounced
+        sortBy,
+        sortOrder,
+        page,
+        limit,
+      })
+    );
+  }, [
+    dispatch,
+    debouncedSearch,
+    debouncedMinPrice,
+    debouncedMaxPrice,
+    status,
+    startDate,
+    endDate,
+    sortBy,
+    sortOrder,
+    page,
+    limit,
+  ]);
   // ✅ handlers
   const handleEdit = (id) => navigate(`/edit-cutomer/${id}`);
   const handleAdd = () => navigate("/add-cutomer");
@@ -590,57 +593,72 @@ useEffect(() => {
     setSortOrder(order);
   };
 
+const handleDelete = async (id) => {
+  const confirm = await confirmAction("Delete this customer?");
+  if (!confirm) return;
 
+  try {
+    showLoader("Deleting Customer...");
+
+    await dispatch(deleteCustomer({ id })).unwrap();
+
+    hideLoader();
+    showSuccess("Customer deleted successfully");
+  } catch (err) {
+    hideLoader();
+    showError(err || "Delete failed");
+  }
+};
   useEffect(() => {
-  setPage(1);
-}, [
-  debouncedSearch,
-  debouncedMinPrice,
-  debouncedMaxPrice,
-  status,
-  startDate,
-  endDate,
-  sortBy,
-  sortOrder,
-]);
+    setPage(1);
+  }, [
+    debouncedSearch,
+    debouncedMinPrice,
+    debouncedMaxPrice,
+    status,
+    startDate,
+    endDate,
+    sortBy,
+    sortOrder,
+  ]);
   return (
     <div style={{ padding: 20 }}>
-            <h2 className="p-2 text-2xl">Customer List</h2>
+      <h2 className="p-2 text-2xl">Customer List</h2>
 
       <div className="flex items-center justify-between gap-3 mb-4">
 
-      <SearchBar
-        search={search}
-        setSearch={setSearch}
-      />
-
-      {Role === "customer" && (
-        <Button
-          text="Add Customer"
-          onClick={handleAdd}
-          icon={<AddIcon />}
-          className="whitespace-nowrap"
+        <SearchBar
+          search={search}
+          setSearch={setSearch}
         />
-      )}
 
-    </div>
+        {Role === "customer" && (
+          <Button
+            text="Add Customer"
+            onClick={handleAdd}
+            icon={<AddIcon />}
+            className="whitespace-nowrap"
+          />
+        )}
+
+      </div>
 
       {/* ✅ Common Filters */}
-          <CommonFilters
-      status={status}
-      setStatus={setStatus}
-      startDate={startDate}
-      setStartDate={setStartDate}
-      endDate={endDate}
-      setEndDate={setEndDate}
-      limit={limit}
-      setLimit={setLimit}
-      statusOptions={customerStatusOptions}
-      minPrice={minPrice}
-      setMinPrice={setMinPrice}
-      maxPrice={maxPrice}
-      setMaxPrice={setMaxPrice}
-    />
+      <CommonFilters
+        status={status}
+        setStatus={setStatus}
+        startDate={startDate}
+        setStartDate={setStartDate}
+        endDate={endDate}
+        setEndDate={setEndDate}
+        limit={limit}
+        setLimit={setLimit}
+        statusOptions={customerStatusOptions}
+        minPrice={minPrice}
+        setMinPrice={setMinPrice}
+        maxPrice={maxPrice}
+        setMaxPrice={setMaxPrice}
+      />
 
       {/* ✅ Price Filters */}
       {/* <div className="flex gap-3 my-3">
@@ -660,7 +678,7 @@ useEffect(() => {
       </div> */}
 
       {/* ✅ Table */}
-      <TableContainer component={Paper} sx={{ maxHeight: 520, borderRadius: 2 }}>
+      <TableContainer component={Paper} sx={{ maxHeight: 520, borderRadius: 2, marginTop: 2 }}>
         <CommonTable
           columns={customerHead}
           data={AllCustomer}
@@ -729,32 +747,37 @@ useEffect(() => {
                       <EditIcon />
                     </IconButton>
                   </Tooltip>
+<Tooltip title="Delete">
 
+  <IconButton onClick={() => handleDelete(customer._id)} color="error">
+    <DeleteIcon />
+  </IconButton>
+</Tooltip>
                   <Tooltip title="History">
-  <IconButton
-    onClick={() => handleHistory(customer.userId?._id)}
-    sx={{
-      color: "#6b7280", // gray-500
-      "&:hover": { backgroundColor: "#e5e7eb" }, // gray-200
-    }}
-  >
-    <HistoryIcon />
-  </IconButton>
-</Tooltip>
+                    <IconButton
+                      onClick={() => handleHistory(customer.userId?._id)}
+                      sx={{
+                        color: "#6b7280", // gray-500
+                        "&:hover": { backgroundColor: "#e5e7eb" }, // gray-200
+                      }}
+                    >
+                      <HistoryIcon />
+                    </IconButton>
+                  </Tooltip>
 
-<Tooltip title="Status">
-  <IconButton
-    onClick={() =>
-      handleViewStatus(customer.userId?._id, customer._id)
-    }
-    sx={{
-      color: "#f59e0b", // amber-500
-      "&:hover": { backgroundColor: "#fef3c7" }, // amber-100
-    }}
-  >
-    <AssignmentIcon />
-  </IconButton>
-</Tooltip>
+                  <Tooltip title="Status">
+                    <IconButton
+                      onClick={() =>
+                        handleViewStatus(customer.userId?._id, customer._id)
+                      }
+                      sx={{
+                        color: "#f59e0b", // amber-500
+                        "&:hover": { backgroundColor: "#fef3c7" }, // amber-100
+                      }}
+                    >
+                      <AssignmentIcon />
+                    </IconButton>
+                  </Tooltip>
 
                 </div>
               </TableCell>
@@ -768,7 +791,7 @@ useEffect(() => {
       <Pagination
         page={page}
         limit={limit}
-totalCount={pagination?.totalRecords || 0}
+        totalCount={pagination?.totalRecords || 0}
         onPageChange={(newPage) => setPage(newPage)}
       />
 

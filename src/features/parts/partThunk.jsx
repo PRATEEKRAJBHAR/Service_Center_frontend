@@ -66,7 +66,7 @@ export const getParts = createAsyncThunk(
             }
 
             const response = await API.get(url);
-            console.log(response, "response");
+            // console.log(response, "response");
             return response.data
 
         } catch (error) {

@@ -166,7 +166,8 @@ function ReportServiceLog() {
 });
 
   return (
-    <div className="p-6 bg-white shadow-md rounded-lg max-w-md w-full">
+    <div className="min-h-screen flex items-center justify-center">
+  <div className="p-6 bg-white shadow-md rounded-lg w-1/2 border">
 
       <h2 className="text-xl font-semibold mb-4">
         Upload Service Report
@@ -196,7 +197,9 @@ function ReportServiceLog() {
         </div>
 
       </form>
-    </div>
+
+  </div>
+</div>
   );
 }
 

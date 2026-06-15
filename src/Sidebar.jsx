@@ -36,15 +36,15 @@ const Sidebar = ({ isOpen }) => {
     {
       name: "Parts",
       path: "/parts-list",
-      icon: <SettingsIcon />,
+      icon: <ReceiptIcon />,
       roles: ["admin"],
     },
-    {
-      name: "Invoices",
-      path: "/invoices",
-      icon: <ReceiptIcon />,
-      roles: ["admin", "technician", "customer"],
-    },
+    // {
+    //   name: "Invoices",
+    //   path: "/invoices",
+    //   icon: <ReceiptIcon />,
+    //   roles: ["admin", "technician", "customer"],
+    // },
   ];
 
   const filteredMenu = menuItems.filter((item) =>

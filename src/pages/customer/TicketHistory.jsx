@@ -1,24 +1,49 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { customerHistory, downloadTicket } from "../../features/service/serviceThunk";
-import { useParams } from "react-router-dom";
+import {
+  customerHistory,
+  downloadTicket,
+} from "../../features/service/serviceThunk";
+import { useNavigate, useParams } from "react-router-dom";
+import Button from "../../component/commonButton";
+import AddIcon from "@mui/icons-material/Add";
 
 function TicketHistory() {
   const dispatch = useDispatch();
+const navigate=useNavigate();
 
   const { customerHistory: history, loading } = useSelector(
     (state) => state.service
   );
 
-console.log(history,"customer hystory");
-  const { userId,id} = useParams();
+  const { userId } = useParams();
 
   useEffect(() => {
     if (userId) {
       dispatch(customerHistory(userId));
     }
+  }, [dispatch, userId]);
 
-  }, [dispatch, userId,id]);
+const handleDownload = async (id) => {
+  const result = await dispatch(downloadTicket(id));
+
+  const blob = result.payload;
+
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `service-${id}.pdf`;
+
+  document.body.appendChild(a);
+  a.click();
+
+  a.remove();
+ setTimeout(() => {
+  window.location.reload();
+}, 500);
+  window.URL.revokeObjectURL(url);
+};
 
   if (loading) {
     return (
@@ -27,101 +52,186 @@ console.log(history,"customer hystory");
       </div>
     );
   }
-const handleDownload = async (id) => {
-  try {
-    const result = await dispatch(downloadTicket(id));
 
-    const blob = result.payload;
-
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `service-${id}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-
-    a.remove();
-    window.URL.revokeObjectURL(url);
-  } catch (error) {
-    console.log("Download error", error);
-  }
-};
   return (
     <div className="bg-gray-100 min-h-screen py-10 px-4">
       {history && history.length > 0 ? (
         history.map((item) => (
           <div
             key={item._id}
-            className="bg-white max-w-3xl mx-auto mb-8 p-6 rounded-xl shadow-md"
+            className="bg-white max-w-5xl mx-auto mb-10 p-8 border border-black shadow-lg"
           >
-            <h2 className="text-center text-xl font-bold border-b-2 border-black pb-2 mb-5">
+            {/* Header */}
+            <h2 className="text-center text-2xl font-bold border-b-2 border-black pb-3 mb-6">
               SERVICE REPORT
             </h2>
-                   <button onClick={()=>handleDownload(item._id)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 mb-3 rounded-lg">
-                    Download Report
-                  </button>
-            {/* Top Section */}
-            <div className="flex justify-between mb-5 text-sm md:text-base">
 
-              <div className="space-y-1">
-                <p><span className="font-semibold">Ticket ID:</span> {item.ticketId}</p>
-                <p><span className="font-semibold">Problem:</span> {item.problemDescription}</p>
-                <p><span className="font-semibold">Status:</span> {item.status}</p>
+            {/* Service Info */}
+            <div className="flex flex-col md:flex-row justify-between items-start mb-6 gap-4">
+              <div className="space-y-2">
                 <p>
-                  <span className="font-semibold">Date:</span>{" "}
-                  {new Date(item.createdAt).toLocaleDateString()}
+                  <strong>Service ID:</strong> {item._id}
+                </p>
+
+                <p>
+                  <strong>Status:</strong> {item.status}
+                </p>
+
+                <p>
+                  <strong>Date:</strong>{" "}
+                  {new Date(item.createdAt).toDateString()}
+                </p>
+
+                <p>
+                  <strong>Problem:</strong>{" "}
+                  {item.ticketId?.problemDescription || "N/A"}
                 </p>
               </div>
 
-              <div className="space-y-1 text-right">
-                <p><span className="font-semibold">Technician:</span> {item.technicianId?.name}</p>
-                <p><span className="font-semibold">Grand Total:</span> ₹{item.grandTotal}</p>
+              <Button
+                text="Download Report"
+                onClick={() => handleDownload(item._id)}
+                icon={<AddIcon />}
+              />
+            </div>
+
+            {/* Customer & Technician */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+              <div className="border border-black p-4">
+                <h3 className="font-bold underline mb-2">Customer</h3>
+
+                <p>
+                  <strong>Name:</strong>{" "}
+                  {item.customerId?.name || "N/A"}
+                </p>
+
+                <p>
+                  <strong>Phone:</strong>{" "}
+                  {item.ticketId?.phone || "N/A"}
+                </p>
+
+                <p>
+                  <strong>Address:</strong>{" "}
+                  {item.ticketId?.address || "N/A"}
+                </p>
+
+                <p>
+                  <strong>Device:</strong>{" "}
+                  {item.ticketId?.deviceName || "N/A"}
+                </p>
+              </div>
+
+              <div className="border border-black p-4">
+                <h3 className="font-bold underline mb-2">Technician</h3>
+
+                <p>
+                  <strong>Name:</strong>{" "}
+                  {item.technicianId?.name || "Not Assigned"}
+                </p>
+
+                <p>
+                  <strong>Email:</strong>{" "}
+                  {item.technicianId?.email || "N/A"}
+                </p>
               </div>
             </div>
 
             {/* Parts Table */}
-            {item.parts && item.parts.length > 0 && (
-              <div className="overflow-x-auto">
-                <table className="w-full border border-gray-300 text-sm">
-                  <thead>
-                    <tr className="bg-gray-200">
-                      <th className="border p-2">Part</th>
-                      <th className="border p-2">Qty</th>
-                      <th className="border p-2">Price</th>
-                      <th className="border p-2">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {item.parts.map((part) => (
-                      <tr key={part._id} className="text-center">
-                        <td className="border p-2">{part.partId?.partName}</td>
-                        <td className="border p-2">{part.quantity}</td>
-                        <td className="border p-2">{part.price}</td>
-                        <td className="border p-2">{part.total}</td>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-black">
+                <thead>
+                  <tr className="bg-gray-200">
+                    <th className="border border-black p-2">Sr No</th>
+                    <th className="border border-black p-2">Part Name</th>
+                    <th className="border border-black p-2">Qty</th>
+                    <th className="border border-black p-2">Price</th>
+                    <th className="border border-black p-2">Total</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {item.parts && item.parts.length > 0 ? (
+                    item.parts.map((part, index) => (
+                      <tr key={part._id || index}>
+                        <td className="border border-black p-2 text-center">
+                          {index + 1}
+                        </td>
+
+                        <td className="border border-black p-2 text-center">
+                          {part.partId?.partName || "N/A"}
+                        </td>
+
+                        <td className="border border-black p-2 text-center">
+                          {part.quantity}
+                        </td>
+
+                        <td className="border border-black p-2 text-center">
+                          ₹{part.price}
+                        </td>
+
+                        <td className="border border-black p-2 text-center">
+                          ₹{part.total}
+                        </td>
                       </tr>
-                    ))}
-                  </tbody>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan="5"
+                        className="border border-black p-3 text-center"
+                      >
+                        No Parts Added
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-                </table>
+            {/* Totals */}
+            <div className="flex justify-end mt-6">
+              <table className="w-full md:w-80 border border-black">
+                <tbody>
+                  <tr>
+                    <td className="border border-black p-2">
+                      Parts Total
+                    </td>
+                    <td className="border border-black p-2">
+                      ₹{item.partsTotal}
+                    </td>
+                  </tr>
 
+                  <tr>
+                    <td className="border border-black p-2">
+                      Service Charge
+                    </td>
+                    <td className="border border-black p-2">
+                      ₹{item.serviceCharge}
+                    </td>
+                  </tr>
+
+                  <tr className="font-bold">
+                    <td className="border border-black p-2">
+                      Grand Total
+                    </td>
+                    <td className="border border-black p-2">
+                      ₹{item.grandTotal}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Signatures */}
+            <div className="flex justify-between mt-16">
+              <div className="w-40 md:w-52 text-center border-t border-black pt-2">
+                Customer Signature
               </div>
-            )}
 
-            {/* PDF Button */}
-            {item.reports && item.reports.length > 0 && (
-              <div className="mt-4 text-center">
-                <a
-                  href={item.reports[0].url}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
-                    View PDF
-                  </button>
-                </a>
+              <div className="w-40 md:w-52 text-center border-t border-black pt-2">
+                Authorized Signature
               </div>
-            )}
+            </div>
           </div>
         ))
       ) : (

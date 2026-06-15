@@ -23,9 +23,10 @@ export const CreateService = createAsyncThunk(
 
 export const ListingService = createAsyncThunk(
     'service/listing',
-    async ({ search, status, startDate, endDate ,technician,sortBy,sortOrder,page,limit}, thunkApi) => {
+    async ({ search, status, startDate, endDate ,technician,sortBy,sortOrder,page,limit, minPrice,maxPrice,}, thunkApi) => {
         try {
             let url = `/services?`;
+            console.log("URL =>", url);
 
 if (search) url += `search=${search}&`;
 if (status) url += `status=${status}&`;
@@ -35,7 +36,17 @@ if (technician) url += `technician=${technician}&`;
 if (sortBy) url += `sortBy=${sortBy}&`;
 if (sortOrder) url += `sortOrder=${sortOrder}&`;
 if (page) url += `page=${page}&`;
-if (limit) url += `limit=${limit}`;
+if (limit) url += `limit=${limit}&`;   // ✅ FIXED
+if (minPrice !== "" && minPrice != null)
+  url += `minPrice=${minPrice}&`;
+if (maxPrice !== "" && maxPrice != null)
+  url += `maxPrice=${maxPrice}&`;
+console.log({
+  minPrice,
+  maxPrice
+});
+console.log("FINAL URL =>", url);
+
             // console.log(response, "service listing response data");
             const response = await API.get(url);
             console.log(response,"response data heresss");
@@ -448,3 +459,20 @@ export const getTicketsByCustomer = createAsyncThunk(
 
 
 
+// delete  service
+
+
+
+export const deleteService = createAsyncThunk(
+    'services/delete',
+    async ({ id }, thunkApi) => {
+        try {
+            const response = await API.delete(`/services/${id}`);
+            console.log(response, "response");
+            return id;
+
+        } catch (error) {
+            return thunkApi.rejectWithValue(error.response?.data?.message || error.message)
+        }
+    }
+)
